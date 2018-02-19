@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane prefHeight="882.0" prefWidth="1260.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1">
+<!-- <fx:define>
+	<Image fx:id="getStartedImage" url="@src/img/IMG_1368.JPG"></Image>
+</fx:define> -->
+	<children>
+		<BorderPane layoutX="34.0" layoutY="14.0" prefHeight="838.0" prefWidth="1191.0">
+			<top>
+				<HBox BorderPane.alignment="CENTER">
+					<children>
+						<Button mnemonicParsing="false" prefHeight="66.0" prefWidth="103.0" text="Get Started">
+<!-- 							<font>
+								<Font name="Avenir Next Regular" size="13.0" />
+							</font>
+							<graphic>
+								<ImageView image="$getStartedImage" />
+							</graphic> -->
+						</Button>
+						<Button mnemonicParsing="false" prefHeight="66.0" prefWidth="103.0" text="Upload">
+
+						</Button>
+						<Button mnemonicParsing="false" prefHeight="66.0" prefWidth="103.0" text="Button" />
+						<Button mnemonicParsing="false" prefHeight="66.0" prefWidth="103.0" text="Button" />
+					</children>
+				</HBox>
+			</top>
+		</BorderPane>
+	</children>
+</AnchorPane>
