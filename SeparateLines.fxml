@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane prefHeight="868.0" prefWidth="1134.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.111" fx:controller="battery.SeparateLinesController">
+   <top>
+      <ButtonBar buttonOrder="" prefHeight="46.0" prefWidth="499.0" BorderPane.alignment="CENTER">
+        <buttons>
+          <Button onAction="#upload" alignment="CENTER" mnemonicParsing="false" text="Click Here" />
+        </buttons>
+      </ButtonBar>
+   </top>
+</BorderPane>
