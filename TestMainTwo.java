@@ -2,22 +2,24 @@ package application;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Stage;
 
-public class Main extends Application {
+public class TestMainTwo extends Application {
+
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			Parent root = FXMLLoader.load(getClass().getResource("Main.fxml"));
-			Scene scene = new Scene(root);
+			//BorderPane pane = (BorderPane)FXMLLoader.load(getClass().getResource("Test.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("Test.fxml"));
+			Parent root = loader.load();
 			primaryStage.setTitle("Digital Drone Forensics");
+			Scene scene = new Scene(root, 1000, 800);
 			scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			primaryStage.setScene(scene);
-			primaryStage.setMaximized(false);
+			//primaryStage.setMaximized(true);
 			primaryStage.show();
-			
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

@@ -5,10 +5,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,6 +35,8 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Tab;
+import javafx.scene.text.Text;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.FileChooser;
@@ -41,14 +45,20 @@ public class UploadController {
 
 	@FXML
 	WebView webView;
+	@FXML
+	Text distanceTravelled, flightDate, flightLength, maxAlt;
+	@FXML
+	Tab overviewTab;
+	@FXML
+	Text fileReadNotice;
 
 	FileChooser fileChooser = new FileChooser();
 	String filePath;
 	String fileName;
 	CSVReader reader = null;
 	CSVWriter writer = null;
-	String csvWriteFile = "C://Users//ankit//Documents//testCSVWithoutHeader.csv";
-	Scanner scan = null;
+	// String csvWriteFile =
+	// "C://Users//ankit//Documents//testCSVWithoutHeader.csv";
 	FileWriter kmlWriter;
 	DocumentBuilderFactory docFactory;
 	DocumentBuilder docbuilder;
@@ -56,6 +66,11 @@ public class UploadController {
 	Transformer transform;
 	DOMSource source;
 	StreamResult result;
+	Date dateStart = null;
+	Date dateEnd = null;
+	private static final double radius = 6371d;
+
+	List<Parameters> paramValues = new ArrayList<Parameters>();
 
 	@FXML
 	public void uploadFile(ActionEvent event) {
@@ -66,10 +81,24 @@ public class UploadController {
 		if (file != null) {
 			filePath = file.getAbsolutePath();
 			fileName = file.getName();
-			System.out.println(filePath);
-			System.out.println(fileName);
-			readFile(file);
+			// readFile(file);
+			try {
+				reader = new CSVReader(new FileReader(filePath), ',', '\'', 2);
+				String[] column = null;
+				while ((column = reader.readNext()) != null) {
+					Parameters params = new Parameters(column[0], column[1], column[2], column[3], column[4], column[5],
+							column[6], column[7], column[8], column[9], column[10], column[11], column[12], column[13],
+							column[14], column[15], column[16], column[17], column[18], column[19], column[20],
+							column[21]);
+					paramValues.add(params);
+				}
+				fileReadNotice.setText("File Read Success");
+
+			} catch (IOException io) {
+				Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, io);
+			}
 		} else {
+			fileReadNotice.setText("File Read Failed");
 			Alert errorAlert = new Alert(AlertType.ERROR);
 			errorAlert.setTitle("Error");
 			errorAlert.setHeaderText("Error Information");
@@ -79,76 +108,125 @@ public class UploadController {
 	}
 
 	@FXML
+	private void distance(ActionEvent event) {
+		DecimalFormat df = new DecimalFormat("####.##");
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+		double latChange;
+		double longChange;
+		double distanceOfTwoValues, a, c;
+		double totalDistance = 0;
+		int latIncrement = 0;
+		int longIncrement = 0;
+		double deg2Rad = Math.PI / 180;
+		double altitude = Double.parseDouble(paramValues.get(0).getAltitude());
+
+		for (int i = 0; i < paramValues.size() - 1; i++) {
+			double lat1 = Double.parseDouble(paramValues.get(latIncrement).getLatitude());
+			double lat2 = Double.parseDouble(paramValues.get(++latIncrement).getLatitude());
+
+			double long1 = Double.parseDouble(paramValues.get(longIncrement).getLongitude());
+			double long2 = Double.parseDouble(paramValues.get(++longIncrement).getLongitude());
+
+			latChange = (lat1 - lat2) * deg2Rad;
+			longChange = (long1 - long2) * deg2Rad;
+
+			a = Math.sin(latChange / 2) * Math.sin(latChange / 2) + Math.cos(deg2Rad * (lat1))
+					* Math.cos(deg2Rad * (lat2)) * Math.sin(longChange / 2) * Math.sin(longChange / 2);
+
+			c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+			distanceOfTwoValues = radius * c * 1000;
+
+			distanceOfTwoValues = Math.sqrt(Math.pow(distanceOfTwoValues, 2));
+
+			totalDistance = totalDistance + distanceOfTwoValues;
+
+			if (altitude < Double.parseDouble(paramValues.get(i).getAltitude())) {
+				altitude = Double.parseDouble(paramValues.get(i).getAltitude());
+			}
+		}
+		maxAlt.setText(altitude + " meters");
+
+		distanceTravelled.setText(df.format(totalDistance) + " meters");
+
+		// Date and Time
+
+		String startTimeFromLog = paramValues.get(0).getTime_Date();
+		String splitStartTimeDate[] = startTimeFromLog.split(" ");
+
+		String endTimeFromLog = paramValues.get(paramValues.size() - 1).getTime_Date();
+		String splitEndTimeDate[] = endTimeFromLog.split(" ");
+
+		// Date
+		String unformattedDate = splitStartTimeDate[0];
+		String date = unformattedDate.substring(0, 4) + "-" + unformattedDate.substring(4, 6) + "-"
+				+ unformattedDate.substring(6, 8);
+		flightDate.setText(date);
+
+		// format time
+		String unformattedStartTime = splitStartTimeDate[1].substring(0, 8);
+		String unformattedEndTime = splitEndTimeDate[1].substring(0, 8);
+
+		try {
+			dateStart = simpleDateFormat.parse(unformattedStartTime);
+			dateEnd = simpleDateFormat.parse(unformattedEndTime);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		// Final time difference
+		long timeDiff = dateEnd.getTime() - dateStart.getTime();
+
+		long timeMinutes = timeDiff / (60 * 1000) % 60;
+		long timeSeconds = timeDiff / 1000 % 60;
+
+		flightLength.setText(timeMinutes + " mins" + " " + timeSeconds + " secs");
+
+	}
+
+	@FXML
 	public void openMaps(ActionEvent event) {
 		WebEngine engine = webView.getEngine();
 		URL localURL = getClass().getResource("kmlTest.html");
-
 		// String url = "http://eclipse.org";
 		engine.load(localURL.toExternalForm());
+
 	}
 
-	public void readFile(File file) {
+	@FXML
+	public void convertCSVToKML(ActionEvent event) {
 		try {
-			reader = new CSVReader(new FileReader(filePath), ',', '\'', 2);
 
-			String[] column = null;
-			// String[] splitDateTime = null;
-			List<Parameters> paramValues = new ArrayList<Parameters>();
-			while ((column = reader.readNext()) != null) {
-				Parameters params = new Parameters(column[0], column[1], column[2], column[3], column[4], column[5],
-						column[6], column[7], column[8], column[9], column[10], column[11], column[12], column[13],
-						column[14], column[15], column[16], column[17], column[18], column[19], column[20], column[21]);
-
-			/*	System.out.println(column[0] + "    " + column[1] + "     " + column[2] + "     " + column[3] + "     "
-						+ column[4] + "    " + column[5] + "     " + column[6] + "     " + column[7] + "     "
-						+ column[8] + "     " + column[9] + "     " + column[10] + "     " + column[11] + "     "
-						+ column[12] + "     " + column[13] + "     " + column[14] + "     " + column[15] + "     "
-						+ column[16] + "     " + column[17] + "     " + column[18] + "     " + column[19] + "     "
-						+ column[20] + "     " + column[21]);*/
-
-				paramValues.add(params);
-			}
-			System.out.println("File read!!");
-
-			writeFile(paramValues);
-		} catch (IOException io) {
-			Logger.getLogger(UploadController.class.getName()).log(Level.SEVERE, null, io);
-		}
-	}
-
-	public void writeFile(List<Parameters> writeParams) {
-		try {
-			
 			/*
-			 * date_Time = writeParams.get(0).getTime_Date();
+			 * date_Time = paramValues.get(0).getTime_Date();
 			 * System.out.println(date_Time);
 			 */
 
 			/*
-			 * Parameters firstElement = null; if (writeParams.size() > 0) {
-			 * firstElement = writeParams.get(1); }
+			 * Parameters firstElement = null; if (paramValues.size() > 0) {
+			 * firstElement = paramValues.get(1); }
 			 * System.out.println(firstElement);
 			 */
 			// System.out.println(date_tim);
 
 			/*
-			 * String[] date = new String[]{writeParams.get(0).getTime_Date(),
-			 * writeParams.get(0).getAltitude(),
-			 * writeParams.get(0).getLatitude(),
-			 * writeParams.get(0).getLongitude()}; System.out.println(date);
+			 * String[] date = new String[]{paramValues.get(0).getTime_Date(),
+			 * paramValues.get(0).getAltitude(),
+			 * paramValues.get(0).getLatitude(),
+			 * paramValues.get(0).getLongitude()}; System.out.println(date);
 			 */
 
 			/*
 			 * String[] retrieveElements = null; for (int i = 0; i <
-			 * writeParams.size(); i++) { retrieveElements = new String[] {
-			 * writeParams.get(i).getTime_Date(),
-			 * writeParams.get(i).getAltitude(),
-			 * writeParams.get(i).getLatitude(),
-			 * writeParams.get(i).getLongitude() }; }
+			 * paramValues.size(); i++) { retrieveElements = new String[] {
+			 * paramValues.get(i).getTime_Date(),
+			 * paramValues.get(i).getAltitude(),
+			 * paramValues.get(i).getLatitude(),
+			 * paramValues.get(i).getLongitude() }; }
 			 */
 			String firstLineTimeElement = null;
-			String firstLineLatitude = null;;
-			String firstLineLongitude = null;;
+			String firstLineLatitude = null;
+			String firstLineLongitude = null;
 			String firstLineAltitudeElement = null;
 			String secondLineAltitudeElement = null;
 			String lastLineTimeElement = null;
@@ -156,29 +234,32 @@ public class UploadController {
 			String lastLineLatitudeElement = null;
 			String lastLineLongitudeElement = null;
 			String testLastPitch;
-			
-			if(writeParams != null && !writeParams.isEmpty()){
-				firstLineTimeElement = writeParams.get(0).getTime_Date();
-				firstLineLatitude = writeParams.get(0).getLatitude();
-				firstLineLongitude = writeParams.get(0).getLongitude();
-				firstLineAltitudeElement = writeParams.get(0).getAltitude();
-				secondLineAltitudeElement = writeParams.get(1).getAltitude();
-				lastLineTimeElement = writeParams.get(writeParams.size() - 1).getTime_Date();
-				lastLineAltitudeElement = writeParams.get(writeParams.size() - 1).getAltitude();
-				lastLineLatitudeElement = writeParams.get(writeParams.size() - 1).getLatitude();
-				lastLineLongitudeElement = writeParams.get(writeParams.size() - 1).getLongitude();
-				testLastPitch = writeParams.get(writeParams.size() - 1).getPitch();
-				System.out.println("Here it is: " + lastLineAltitudeElement + "  " + lastLineLatitudeElement + "  " + lastLineLongitudeElement + "   " + testLastPitch);
+
+			if (paramValues != null && !paramValues.isEmpty()) {
+				firstLineTimeElement = paramValues.get(0).getTime_Date();
+				firstLineLatitude = paramValues.get(0).getLatitude();
+				firstLineLongitude = paramValues.get(0).getLongitude();
+				firstLineAltitudeElement = paramValues.get(0).getAltitude();
+				secondLineAltitudeElement = paramValues.get(10).getAltitude();
+				lastLineTimeElement = paramValues.get(paramValues.size() - 1).getTime_Date();
+				lastLineAltitudeElement = paramValues.get(paramValues.size() - 1).getAltitude();
+				lastLineLatitudeElement = paramValues.get(paramValues.size() - 1).getLatitude();
+				lastLineLongitudeElement = paramValues.get(paramValues.size() - 1).getLongitude();
+				testLastPitch = paramValues.get(paramValues.size() - 1).getPitch();
+				System.out.println("Here it is: " + lastLineAltitudeElement + "  " + lastLineLatitudeElement + "  "
+						+ lastLineLongitudeElement + "   " + testLastPitch);
 			}
 
-			
-			System.out.println(firstLineTimeElement + firstLineAltitudeElement + secondLineAltitudeElement);
+			System.out.println(
+					firstLineTimeElement + " | " + firstLineAltitudeElement + " | " + secondLineAltitudeElement);
 
-			String[] dateTimeAllRows = null;
-			for (int i = 0; i < writeParams.size(); i++) {
-
-				dateTimeAllRows = new String[] { writeParams.get(i).getTime_Date() };
-			}
+			/*
+			 * String[] dateTimeAllRows = null; for (int i = 0; i <
+			 * paramValues.size(); i++) {
+			 * 
+			 * dateTimeAllRows = new String[] {
+			 * paramValues.get(i).getTime_Date() }; }
+			 */
 
 			String[] firstDateTimeDivide = firstLineTimeElement.split(" ");
 			String firstDate = firstDateTimeDivide[0];
@@ -198,7 +279,7 @@ public class UploadController {
 			Attr attribute1 = doc.createAttribute("xmlns");
 			attribute1.setValue("http://www.opengis.net/kml/2.2");
 			rootElement.setAttributeNode(attribute1);
-			
+
 			Attr attribute2 = doc.createAttribute("xmlns:gx");
 			attribute2.setValue("http://www.google.com/kml/ext/2.2");
 			rootElement.setAttributeNode(attribute2);
@@ -227,7 +308,7 @@ public class UploadController {
 			style1.appendChild(linestyle1);
 
 			Element color1 = doc.createElement("color");
-			color1.appendChild(doc.createTextNode("FF0000FF"));
+			color1.appendChild(doc.createTextNode("ff00ff00"));
 			linestyle1.appendChild(color1);
 
 			Element width1 = doc.createElement("width");
@@ -332,11 +413,10 @@ public class UploadController {
 			altMode.appendChild(doc.createTextNode("absolute"));
 			lineString.appendChild(altMode);
 			Element coordinates2 = doc.createElement("coordinates");
-			for (Parameters listValues : writeParams) {
+			for (Parameters listValues : paramValues) {
 
-				coordinates2.appendChild(doc.createTextNode("\n" + listValues.getLongitude() + "," + listValues.getLatitude()
-						+ "," + listValues.getAltitude() + "\n"));
-
+				coordinates2.appendChild(doc.createTextNode("\n" + listValues.getLongitude() + ","
+						+ listValues.getLatitude() + "," + listValues.getAltitude() + "\n"));
 			}
 			lineString.appendChild(coordinates2);
 
@@ -355,9 +435,10 @@ public class UploadController {
 			Element point2 = doc.createElement("Point");
 			placemark3.appendChild(point2);
 			Element coordinates3 = doc.createElement("coordinates");
-			coordinates3.appendChild(doc.createTextNode(lastLineLongitudeElement + "," + lastLineLatitudeElement + "," + lastLineAltitudeElement));
+			coordinates3.appendChild(doc.createTextNode(
+					lastLineLongitudeElement + "," + lastLineLatitudeElement + "," + lastLineAltitudeElement));
 			point2.appendChild(coordinates3);
-			
+
 			transformFac = TransformerFactory.newInstance();
 			try {
 				transform = transformFac.newTransformer();
@@ -365,7 +446,7 @@ public class UploadController {
 				transform.setOutputProperty(OutputKeys.METHOD, "xml");
 				transform.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 				source = new DOMSource(doc);
-				result = new StreamResult(new File("C://program test folder//KmlTestOne.kml"));
+				result = new StreamResult(new File("C://program test folder//Kml file.kml"));
 
 				transform.transform(source, result);
 

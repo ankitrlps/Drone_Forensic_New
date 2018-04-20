@@ -36,7 +36,7 @@
 		  }
 		}
 		
-    	
+
       function initMap() {
  			var parts = {};
 			parts = location.search.split("=");
@@ -54,11 +54,12 @@
   		        	 //url: 'https://raw.githubusercontent.com/ankitrlps/DroneForensics/master/2017-06-14%2019-53-29.kml', //- 3DR Solo
   		        	 //url: 'https://raw.githubusercontent.com/ankitrlps/DroneForensics/master/Test_DJI_logs.kml', //- DJI Phantom 4,
   		        	 //url: 'https://raw.githubusercontent.com/ankitrlps/DroneForensics/master/Telemetry00010.kml', // Typhoon H
+  		        	 //url: 'https://raw.githubusercontent.com/ankitrlps/DroneForensics/blob/master/Kml_file_New.kml',
   		        	 url: finalUrl,
   		          map: map
   		        });
   			} else{
-  				document.write("Error processing entered URL. Please check the URL you enter.");
+  				alert("Error processing entered URL. Please check the URL you enter.");
   			}
   		} 
     </script>

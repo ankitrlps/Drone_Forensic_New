@@ -25,7 +25,7 @@ public class Parameters {
 	String error_flags1;
 	String gps_accH;
 
-	Parameters(String Time_Date, String fsk_rssi, String voltage, String current, String altitude, String latitude,
+	public Parameters(String Time_Date, String fsk_rssi, String voltage, String current, String altitude, String latitude,
 			String longitude, String tas, String gps_used, String fix_type, String satellites_num, String roll,
 			String yaw, String pitch, String motor_status, String imu_status, String press_compass_status,
 			String f_mode, String gps_status, String vehicle_type, String error_flags1, String gps_accH) {
