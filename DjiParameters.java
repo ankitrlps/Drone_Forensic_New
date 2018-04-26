@@ -1,4 +1,4 @@
-package application;
+package dji;
 
 public class DjiParameters {
 
@@ -156,7 +156,6 @@ public class DjiParameters {
 	String rcGPSLongitude;
 	String rcGPSxSpeed;
 	String rcGPSySpeed;
-	String rcGPSzSpeed;
 	String rcGPSNum;
 	String rcGPSAccuracy;
 	String rcGPSStatus;
@@ -281,8 +280,7 @@ public class DjiParameters {
 			String sbLowWarningGoHome, String sbSeriousLowWarning, String sbSeriousLowWarningLanding,
 			String sbVoltagePercent, String deIsDeformProtected, String deisExceptionState, String deDeformStatus,
 			String deDeformStatusRaw, String deDeformMode, String deDeformModeRaw, String rcGPSStartupTime,
-			String rcGPSLatitude, String rcGPSLongitude, String rcGPSxSpeed, String rcGPSySpeed, String rcGPSzSpeed,
-			String rcGPSNum, String rcGPSAccuracy, String rcGPSStatus, String hLatitude, String hLongitude,
+			String rcGPSLatitude, String rcGPSLongitude, String rcGPSxSpeed, String rcGPSySpeed, String rcGPSNum, String rcGPSAccuracy, String rcGPSStatus, String hLatitude, String hLongitude,
 			String hHeight, String hIsHomeRecord, String hGoHomeMode, String hAirHeadDirection,
 			String hisDynamicHomePointEnabled, String hisReachedLimitDistance, String hisReachedLimitHeight,
 			String hisMultipleModeOpen, String hGoHomeStatus, String hHasGoHome, String hCompassCeleStatus,
@@ -454,7 +452,6 @@ public class DjiParameters {
 		this.rcGPSLongitude = rcGPSLongitude;
 		this.rcGPSxSpeed = rcGPSxSpeed;
 		this.rcGPSySpeed = rcGPSySpeed;
-		this.rcGPSzSpeed = rcGPSzSpeed;
 		this.rcGPSNum = rcGPSNum;
 		this.rcGPSAccuracy = rcGPSAccuracy;
 		this.rcGPSStatus = rcGPSStatus;
@@ -1776,14 +1773,6 @@ public class DjiParameters {
 
 	public void setRcGPSySpeed(String rcGPSySpeed) {
 		this.rcGPSySpeed = rcGPSySpeed;
-	}
-
-	public String getRcGPSzSpeed() {
-		return rcGPSzSpeed;
-	}
-
-	public void setRcGPSzSpeed(String rcGPSzSpeed) {
-		this.rcGPSzSpeed = rcGPSzSpeed;
 	}
 
 	public String getRcGPSNum() {
